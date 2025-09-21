@@ -1,0 +1,57 @@
+name: Daily Website Status Check
+
+# Runs daily at 05:00 AM (UTC+6) -> GitHub Actions uses UTC, so schedule at 23:00 UTC previous day
+on:
+  schedule:
+    - cron: '0 23 * * *' # runs daily at 23:00 UTC -> 05:00 AM (UTC+6)
+  workflow_dispatch: # allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  check-websites:
+    name: Check websites and publish report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Ensure reports directory exists
+        run: mkdir -p reports
+
+      - name: Run website checks
+        run: |
+          node --version
+          npm -v || true
+          # run the JS script that produces reports/status.md
+          node scripts/check_sites.js
+
+      - name: Commit updated dashboard
+        run: |
+          # Use a stable timestamp in commit message
+          TIMESTAMP="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          git config --global user.name "Deboraj-roy"
+          git config --global user.email "deborajroy123@gmail.com"
+
+          # Add main files
+          git add index.html style.css
+
+          # Add reports folder only if it exists
+          [ -d reports ] && git add reports/
+
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update website status report (${TIMESTAMP})"
+            # Push back to the same branch the workflow is running on
+            git push
+          fi
