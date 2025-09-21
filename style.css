@@ -1,0 +1,122 @@
+:root{
+  --bg:#f7f9fb;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --ok:#1f7a1f;
+  --error:#b91c1c;
+  --accent:#2563eb;
+  --border:#e6edf3;
+  --max-width:1100px;
+  --radius:10px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+}
+
+*{box-sizing:border-box}
+html,body{
+  height:100%;
+  margin:0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, var(--bg), #eef6ff 60%);
+  color:#0f172a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.container{
+  max-width: var(--max-width);
+  margin: 1.5rem auto 6rem;
+  padding: 1rem;
+}
+
+.site-header{
+  max-width: var(--max-width);
+  margin: 2rem auto 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+.site-header h1{
+  margin:0;
+  font-size:1.6rem;
+  letter-spacing: -0.5px;
+}
+.site-header .subtitle{
+  margin:0.25rem 0 0;
+  color:var(--muted);
+  font-size:0.95rem;
+}
+.last-updated{
+  margin-top:0.6rem;
+  color:var(--muted);
+  font-size:0.9rem;
+}
+
+.report{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding:1rem;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+  overflow-x:auto;
+}
+
+/* Table */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.95rem;
+}
+thead th{
+  text-align:left;
+  font-weight:600;
+  padding:0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(0deg, rgba(255,255,255,0.6), rgba(255,255,255,0.85));
+  position: sticky;
+  top:0;
+  z-index:2;
+}
+tbody td{
+  padding:0.65rem 0.5rem;
+  border-bottom: 1px dashed var(--border);
+  vertical-align: middle;
+  word-break:break-word;
+}
+tbody tr.status-ok td{
+  background: rgba(34,197,94,0.06);
+}
+tbody tr.status-error td{
+  background: rgba(185,28,28,0.06);
+}
+tbody tr.status-redirect td{
+  background: rgba(245,158,11,0.06);
+}
+
+.url {
+  max-width: 38ch;
+  color: var(--accent);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.small {
+  font-size:0.85rem;
+  color:var(--muted);
+}
+
+/* Responsive adjustments */
+@media (max-width: 720px) {
+  thead th:nth-child(4),
+  tbody td:nth-child(4),
+  thead th:nth-child(5),
+  tbody td:nth-child(5){
+    display:none;
+  }
+}
+
+/* Footer */
+.site-footer{
+  text-align:center;
+  color:var(--muted);
+  margin:2rem auto 4rem;
+  font-size:0.9rem;
+}
