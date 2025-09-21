@@ -1,17 +1,24 @@
 # Daily-website-status-dashboard
-daily-website-status-dashboard
+Daily-website-status-dashboard
 ```notmd
 # Daily Website Status Dashboard
 
-This repository contains a GitHub Actions workflow that checks a list of websites daily and stores the results in `reports/status.md`. The repository also contains a small static dashboard that reads `reports/status.md` and renders it as a neat HTML table.
+This repository contains a GitHub Actions workflow that checks a list of websites and stores the results in `reports/status.md`. It provides two workflows:
+
+- .github/workflows/website-check-auto.yml — runs automatically daily at 05:00 AM (UTC+6).
+- .github/workflows/website-check-manual.yml — can be run on demand with "Run workflow" in the Actions UI.
 
 How it works:
-- scripts/check_sites.js performs HTTP requests for the list of URLs and writes `reports/status.md`.
-- .github/workflows/website-check.yml runs daily at 05:00 AM (UTC+6) and can also be triggered manually.
-- The workflow commits `reports/status.md` back to the repository (it requires `permissions: contents: write`).
-- index.html + style.css renders the Markdown report for easy viewing (can be served with GitHub Pages).
+- scripts/check_sites.js performs HTTP requests and writes `reports/status.md` with timestamps in multiple timezones (Asia/Dhaka, UK, US, Germany, China).
+- The scheduled workflow uses `permissions: contents: write` so it can commit and push the generated report back to the repo using the provided GITHUB_TOKEN.
+- index.html + style.css renders the Markdown report for easy viewing (works on GitHub Pages).
 
-Suggested repo name: `daily-website-status-dashboard`
+Suggested repository name: `daily-website-status-dashboard`
+
+Notes:
+- Requires Node 18+ on the runner (workflow uses setup-node to install Node 18).
+- If you enable GitHub Pages (branch: main, folder: root) the dashboard will be viewable at https://<owner>.github.io/<repo>.
+- The script runs sequentially to be polite to remote servers. To speed up, you can parallelize checks but be mindful of rate limits.
 ```
 ````
 

@@ -69,7 +69,6 @@ const urls = [
 const TIMEOUT = 20000; // ms
 
 function formatDateForTZ(date, tz, options = {}) {
-  // e.g., "September 22, 2025 at 01:09:46 AM (Asia/Dhaka)"
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     year: 'numeric',
@@ -82,7 +81,6 @@ function formatDateForTZ(date, tz, options = {}) {
     ...options
   });
   const parts = dtf.formatToParts(date);
-  // Build "Month D, YYYY at HH:MM:SS AM/PM"
   const datePart = `${parts.find(p=>p.type==='month').value} ${parts.find(p=>p.type==='day').value}, ${parts.find(p=>p.type==='year').value}`;
   const timePart = `${parts.find(p=>p.type==='hour').value}:${parts.find(p=>p.type==='minute').value}:${parts.find(p=>p.type==='second').value} ${parts.find(p=>p.type==='dayPeriod').value}`;
   return `${datePart} at ${timePart} (${tz})`;
@@ -117,23 +115,18 @@ async function checkUrl(url) {
 (async function main(){
   console.log(`Starting checks for ${urls.length} URLs...`);
   const results = [];
-
-  // check sequentially to avoid hammering; you can parallelize if desired.
   for (const u of urls) {
     process.stdout.write(`Checking: ${u} ... `);
-    // delay slightly between requests to be nicer
     const res = await checkUrl(u);
     console.log(`${res.status} (${res.statusText})`);
     results.push(res);
-    await new Promise(r => setTimeout(r, 250)); // 250ms gap
+    await new Promise(r => setTimeout(r, 250));
   }
 
-  // create reports directory
   const reportsDir = path.join(process.cwd(), 'reports');
   if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
 
   const now = new Date();
-  // Friendly last updated string (UTC)
   const lastUpdatedUTC = formatDateForTZ(now, 'UTC');
   const lastUpdatedDhaka = formatDateForTZ(now, 'Asia/Dhaka');
   const lastUpdatedLondon = formatDateForTZ(now, 'Europe/London');
@@ -141,7 +134,6 @@ async function checkUrl(url) {
   const lastUpdatedBerlin = formatDateForTZ(now, 'Europe/Berlin');
   const lastUpdatedShanghai = formatDateForTZ(now, 'Asia/Shanghai');
 
-  // Build markdown
   let md = `# Daily Website Status Report
 
 Last updated: ${lastUpdatedUTC}
@@ -166,8 +158,7 @@ Last updated: ${lastUpdatedUTC}
     const shanghai = formatDateForTZ(r.timestamp, 'Asia/Shanghai');
     const code = typeof r.status === 'number' ? r.status : r.status;
     const statusText = r.status === 'ERR' ? `Error: ${r.statusText}` : (r.statusText || '');
-    // Add data-field attribute in HTML later when rendering by converting MD to HTML, we will map status code cell
-    const markdownUrl = r.url.replace(/\|/g, '%7C'); // avoid breaking table if pipe in URL
+    const markdownUrl = r.url.replace(/\|/g, '%7C');
     md += `| ${markdownUrl} | ${statusText ? statusText.replace(/\|/g, '/') : (code)} | ${code} | ${utc} | ${dhaka} | ${london} | ${ny} | ${berlin} | ${shanghai} |\n`;
   }
 

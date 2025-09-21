@@ -1,0 +1,47 @@
+name: Website Status Check (manual)
+
+# Manual trigger only
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-websites-manual:
+    name: Check websites and publish report (manual)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Ensure reports directory exists
+        run: mkdir -p reports
+
+      - name: Run website checks
+        run: |
+          node --version
+          node scripts/check_sites.js
+
+      - name: Commit updated dashboard
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TIMESTAMP="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          git config --global user.name "Deboraj-roy"
+          git config --global user.email "deborajroy123@gmail.com"
+          git add index.html style.css
+          [ -d reports ] && git add reports/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update website status report (manual run ${TIMESTAMP})"
+            git push
+          fi
