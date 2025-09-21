@@ -20,7 +20,7 @@ Notes:
 - If you enable GitHub Pages (branch: main, folder: root) the dashboard will be viewable at https://<owner>.github.io/<repo>.
 - The script runs sequentially to be polite to remote servers. To speed up, you can parallelize checks but be mindful of rate limits.
 ```
-````
+ - Check Updated: [Report](https://github.com/GitGalleons/Daily-website-status-dashboard/blob/main/reports/status.md)
 
 Notes and guidance (what I did and why)
 - I added a Node.js script scripts/check_sites.js because Node 18's global fetch makes safe HTTP checks easy and formatting timestamps in different timezones straightforward via Intl.DateTimeFormat.
