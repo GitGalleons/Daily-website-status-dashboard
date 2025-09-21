@@ -25,27 +25,58 @@
   </footer>
 
   <script>
-    async function loadReport() {
-      try {
-        const resp = await fetch('/reports/status.md', {cache: "no-store"});
-        if (!resp.ok) throw new Error('Failed to fetch /reports/status.md (status ' + resp.status + ')');
-        const md = await resp.text();
-        const match = md.match(/Last updated:\s*(.+)/i);
-        if (match && match[1]) {
-          document.getElementById('last-updated').textContent = 'Last updated: ' + match[1].trim();
-        } else {
-          document.getElementById('last-updated').textContent = '';
+    // Try multiple paths so dashboard works both for project pages and user/org pages.
+    async function tryFetchPaths(paths) {
+      for (const p of paths) {
+        try {
+          const resp = await fetch(p, { cache: 'no-store' });
+          if (resp.ok) return await resp.text();
+          // 404 or other non-ok — continue to next candidate
+        } catch (err) {
+          // network error, continue to next
         }
-        const html = marked.parse(md);
-        const container = document.getElementById('report');
-        container.innerHTML = html;
+      }
+      throw new Error('all fetch attempts failed');
+    }
 
+    function makeRawGuess() {
+      // Try to guess owner/repo from the current URL to present a helpful raw link
+      const host = window.location.hostname; // e.g., gitgalleons.github.io
+      let owner = host.split('.')[0] || '';
+      const segments = window.location.pathname.split('/').filter(Boolean);
+      const repo = segments[0] || '';
+      if (owner && repo) {
+        return `https://raw.githubusercontent.com/${owner}/${repo}/main/reports/status.md`;
+      }
+      return null;
+    }
+
+    async function loadReport() {
+      const reportEl = document.getElementById('report');
+      const lastEl = document.getElementById('last-updated');
+
+      // Candidate paths (order matters)
+      const candidates = [
+        'reports/status.md',       // relative — works for project pages (recommended)
+        '/reports/status.md',      // absolute path — works for user/org site served from root
+      ];
+
+      try {
+        const md = await tryFetchPaths(candidates);
+        // Extract last-updated line for header
+        const match = md.match(/Last updated:\s*(.+)/i);
+        if (match && match[1]) lastEl.textContent = 'Last updated: ' + match[1].trim();
+        else lastEl.textContent = '';
+
+        reportEl.innerHTML = marked.parse(md);
+
+        // Color rows by HTTP code
         document.querySelectorAll('table tbody tr').forEach(row => {
-          const codeCell = row.cells[2]; // HTTP Code column (3rd column)
+          const codeCell = row.cells[2]; // HTTP Code column is 3rd column
           if (!codeCell) return;
           const codeText = codeCell.textContent.trim();
           const code = parseInt(codeText, 10);
-          if (!Number.isFinite(code) || codeText.toUpperCase().includes('ERR')) {
+          if (!Number.isFinite(code) || /ERR|ERROR|Timeout/i.test(codeText)) {
             row.classList.add('status-error');
           } else if (code >= 200 && code < 300) {
             row.classList.add('status-ok');
@@ -57,8 +88,18 @@
         });
 
       } catch (err) {
-        document.getElementById('report').innerHTML = '<p class="error">Could not load report: ' + err.message + '</p>';
-        document.getElementById('last-updated').textContent = '';
+        // All attempts failed — show helpful diagnostics and a link to the raw file if guessable
+        const rawLink = makeRawGuess();
+        let html = `<p class="error">Could not load report: ${err.message}.`;
+        html += `<br>The dashboard now tries a relative path (recommended for project pages) and an absolute path.`;
+        if (rawLink) {
+          html += `<br>If the file exists in the repository you can open the raw report directly: <a href="${rawLink}" target="_blank" rel="noopener">${rawLink}</a>`;
+        } else {
+          html += `<br>Please confirm the file <code>reports/status.md</code> exists on the branch GitHub Pages publishes (usually <code>main</code>), and that Pages is configured to serve from that branch/folder.`;
+        }
+        html += `</p>`;
+        reportEl.innerHTML = html;
+        lastEl.textContent = '';
       }
     }
 
