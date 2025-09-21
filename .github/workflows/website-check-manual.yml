@@ -12,10 +12,11 @@ jobs:
     name: Check websites and publish report (manual)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (allow push)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
@@ -30,18 +31,52 @@ jobs:
           node --version
           node scripts/check_sites.js
 
-      - name: Commit updated dashboard
+      - name: Commit and push updated report (safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           TIMESTAMP="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           git config --global user.name "Deboraj-roy"
           git config --global user.email "deborajroy123@gmail.com"
+
+          # Determine branch name; workflow_dispatch typically runs on default branch
+          if [ -n "${GITHUB_REF##*/}" ]; then
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          else
+            BRANCH="main"
+          fi
+          echo "Branch: $BRANCH"
+
+          # Ensure we can push with the token
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          git fetch --no-tags origin +refs/heads/*:refs/remotes/origin/*
+
+          # Stage files
           git add index.html style.css
           [ -d reports ] && git add reports/
+
           if git diff --staged --quiet; then
             echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: update website status report (manual run ${TIMESTAMP})"
+
+          # Try to rebase onto remote branch to incorporate any remote changes
+          set +e
+          git pull --rebase --autostash origin "$BRANCH"
+          PULL_EXIT=$?
+          set -e
+
+          if [ $PULL_EXIT -eq 0 ]; then
+            git push origin "HEAD:${BRANCH}"
+            echo "Pushed updated report to ${BRANCH}"
           else
-            git commit -m "chore: update website status report (manual run ${TIMESTAMP})"
-            git push
+            git rebase --abort 2>/dev/null || true
+            NEW_BRANCH="manual-update-$(date -u +%Y%m%d%H%M%S)"
+            git branch -M "${NEW_BRANCH}"
+            git push --set-upstream origin "${NEW_BRANCH}"
+            echo "Rebase failed; pushed changes to fallback branch: ${NEW_BRANCH}"
+            echo "Please inspect and merge manually."
           fi

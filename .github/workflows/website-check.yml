@@ -1,9 +1,9 @@
 name: Daily Website Status Check
 
-# Runs daily at 05:00 AM (UTC+6) -> GitHub Actions uses UTC, so schedule at 23:00 UTC previous day
+# Runs daily at 05:00 AM (UTC+6) -> schedule at 23:00 UTC previous day
 on:
   schedule:
-    - cron: '0 23 * * *' # runs daily at 23:00 UTC -> 05:00 AM (UTC+6)
+    - cron: '0 23 * * *' # 23:00 UTC -> 05:00 AM (UTC+6)
   workflow_dispatch: # allow manual trigger
 
 permissions:
@@ -14,10 +14,11 @@ jobs:
     name: Check websites and publish report
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (allow push)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
@@ -30,28 +31,60 @@ jobs:
       - name: Run website checks
         run: |
           node --version
-          npm -v || true
           # run the JS script that produces reports/status.md
           node scripts/check_sites.js
 
-      - name: Commit updated dashboard
+      - name: Commit and push updated report (safe)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Use a stable timestamp in commit message
+          set -euo pipefail
+
           TIMESTAMP="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           git config --global user.name "Deboraj-roy"
           git config --global user.email "deborajroy123@gmail.com"
 
-          # Add main files
-          git add index.html style.css
+          # Determine branch name: when triggered by schedule or manual, GITHUB_REF is usually set.
+          if [ -n "${GITHUB_REF:-}" ] && [[ "${GITHUB_REF}" == refs/heads/* ]]; then
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          else
+            # fallback to default branch name
+            BRANCH="${GITHUB_REF_NAME:-main}"
+          fi
+          echo "Target branch: $BRANCH"
 
-          # Add reports folder only if it exists
+          # Ensure pushing with the token and get up-to-date refs
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          git fetch --no-tags origin +refs/heads/*:refs/remotes/origin/*
+
+          # Stage files
+          git add index.html style.css
           [ -d reports ] && git add reports/
 
-          # Only commit if there are changes
+          # If no changes, exit early
           if git diff --staged --quiet; then
             echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: update website status report (${TIMESTAMP})"
+
+          # Try to rebase on latest remote branch (incorporate remote commits)
+          set +e
+          git pull --rebase --autostash origin "$BRANCH"
+          PULL_EXIT=$?
+          set -e
+
+          if [ $PULL_EXIT -eq 0 ]; then
+            # Normal case: rebase succeeded; push to branch
+            git push origin "HEAD:${BRANCH}"
+            echo "Pushed updated report to ${BRANCH}"
           else
-            git commit -m "chore: update website status report (${TIMESTAMP})"
-            # Push back to the same branch the workflow is running on
-            git push
+            # Rebase failed (conflict or other). Abort and push to a fallback branch to preserve the report.
+            git rebase --abort 2>/dev/null || true
+            NEW_BRANCH="auto-update-$(date -u +%Y%m%d%H%M%S)"
+            git branch -M "${NEW_BRANCH}"
+            git push --set-upstream origin "${NEW_BRANCH}"
+            echo "Rebase failed; pushed changes to fallback branch: ${NEW_BRANCH}"
+            echo "Please inspect and merge manually."
           fi
