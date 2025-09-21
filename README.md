@@ -35,7 +35,3 @@ What you should do next
 - Optionally enable GitHub Pages for the repo (source: main branch / root) so index.html is viewable at https://<owner>.github.io/<repo>.
 - If you wish to parallelize checks or increase concurrency, update scripts/check_sites.js to run multiple fetches concurrently (be mindful of rate limits).
 - If you want other timezones shown or fewer columns, adjust the tz list in scripts/check_sites.js.
-
-If you want, I can:
-- open a Pull Request in a repository you specify containing these files, or
-- adjust the script to use concurrency, custom timeouts per domain, or add logging and JSON output as well as Markdown.
