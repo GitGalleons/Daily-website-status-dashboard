@@ -1,36 +1,85 @@
-:root{
-  --bg:#f7f9fb;
-  --card:#ffffff;
-  --muted:#6b7280;
-  --ok:#1f7a1f;
-  --error:#b91c1c;
-  --accent:#2563eb;
-  --border:#e6edf3;
-  --max-width:1100px;
-  --radius:10px;
+/* Custom styles to enhance Bootstrap */
+:root {
+  --bs-body-bg: #f8f9fa;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#eef6ff 60%);color:#0f172a}
-
-.container{max-width:var(--max-width);margin:1.5rem auto 6rem;padding:1rem}
-.site-header{max-width:var(--max-width);margin:2rem auto 0.5rem;padding:1rem;text-align:center}
-.site-header h1{margin:0;font-size:1.6rem}
-.site-header .subtitle{margin:0.25rem 0 0;color:var(--muted);font-size:0.95rem}
-.last-updated{margin-top:0.6rem;color:var(--muted);font-size:0.9rem}
-
-.report{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:0 6px 18px rgba(16,24,40,0.06);overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:0.95rem}
-thead th{text-align:left;font-weight:600;padding:0.75rem 0.5rem;border-bottom:1px solid var(--border);background:linear-gradient(0deg,rgba(255,255,255,0.6),rgba(255,255,255,0.85));position:sticky;top:0;z-index:2}
-tbody td{padding:0.65rem 0.5rem;border-bottom:1px dashed var(--border);vertical-align:middle;word-break:break-word}
-tbody tr.status-ok td{background:rgba(34,197,94,0.06)}
-tbody tr.status-error td{background:rgba(185,28,28,0.06)}
-tbody tr.status-redirect td{background:rgba(245,158,11,0.06)}
-.url{max-width:38ch;color:var(--accent);font-weight:600;word-break:break-all}
-.small{font-size:0.85rem;color:var(--muted)}
-
-@media (max-width:720px){
-  thead th:nth-child(4),tbody td:nth-child(4),thead th:nth-child(5),tbody td:nth-child(5){display:none}
+body {
+  background-color: var(--bs-body-bg);
 }
 
-.site-footer{text-align:center;color:var(--muted);margin:2rem auto 4rem;font-size:0.9rem}
+.card {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-top: none;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+}
+
+.table tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  border-radius: 0.25rem;
+}
+
+.bg-success-light {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-danger-light {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-warning-light {
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-5 {
+    font-size: 2rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  /* Hide some columns on mobile */
+  .table thead th:nth-child(4),
+  .table tbody td:nth-child(4),
+  .table thead th:nth-child(5),
+  .table tbody td:nth-child(5),
+  .table thead th:nth-child(6),
+  .table tbody td:nth-child(6),
+  .table thead th:nth-child(7),
+  .table tbody td:nth-child(7),
+  .table thead th:nth-child(8),
+  .table tbody td:nth-child(8) {
+    display: none;
+  }
+}
+
+/* DataTables customization */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.dataTables_wrapper .dataTables_info {
+  padding: 0 1rem;
+}
