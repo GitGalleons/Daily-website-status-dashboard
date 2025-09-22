@@ -12,20 +12,43 @@ body {
   border-radius: 0.5rem;
 }
 
+/* Enhanced table styling with better borders */
 .table {
   margin-bottom: 0;
+  border: 1px solid #dee2e6;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .table thead th {
   background-color: #f8f9fa;
-  border-top: none;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 2px solid #dee2e6;
   font-weight: 600;
   padding: 0.75rem 1rem;
+  vertical-align: middle;
 }
 
 .table tbody td {
   padding: 0.75rem 1rem;
   vertical-align: middle;
+  border-top: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+}
+
+/* Remove right border from last cell in each row */
+.table tbody td:last-child {
+  border-right: none;
+}
+
+/* Add border to the first row after header */
+.table tbody tr:first-child td {
+  border-top: none;
+}
+
+/* Add subtle row hover effect */
+.table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 /* Status badges */
@@ -48,6 +71,20 @@ body {
   background-color: rgba(255, 193, 7, 0.1);
 }
 
+/* Custom styles for the SL column */
+.sl-column {
+  width: 50px;
+  text-align: center;
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Status icons styling */
+.status-icon {
+  font-size: 1.2em;
+  margin-right: 0.5rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .display-5 {
@@ -56,6 +93,7 @@ body {
   
   .table-responsive {
     font-size: 0.875rem;
+    border: 1px solid #dee2e6;
   }
   
   /* Hide some columns on mobile */
