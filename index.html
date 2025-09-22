@@ -8,7 +8,18 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- DataTables CSS -->
   <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Custom styles for the SL column */
+    .sl-column {
+      width: 50px;
+      text-align: center;
+    }
+    /* Status icons styling */
+    .status-icon {
+      font-size: 1.2em;
+      margin-right: 0.5rem;
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -115,14 +126,41 @@
       $('#status-table').DataTable({
         responsive: true,
         ordering: true,
-        order: [[2, 'asc']],
+        order: [[1, 'asc']], // Order by website name (2nd column) by default
         pageLength: 25,
         lengthMenu: [10, 25, 50, 100],
         dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
         language: {
           search: "Filter:",
           lengthMenu: "Show _MENU_ entries"
-        }
+        },
+        columnDefs: [
+          { orderable: false, targets: 0 } // Make SL column not orderable
+        ]
+      });
+    }
+
+    // Function to add SL column to the table
+    function addSerialNumberColumn() {
+      const table = document.getElementById('status-table');
+      if (!table) return;
+      
+      // Add SL header
+      const headerRow = table.querySelector('thead tr');
+      if (headerRow) {
+        const slHeader = document.createElement('th');
+        slHeader.className = 'sl-column';
+        slHeader.textContent = 'SL';
+        headerRow.insertBefore(slHeader, headerRow.firstChild);
+      }
+      
+      // Add serial numbers to each row
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach((row, index) => {
+        const slCell = document.createElement('td');
+        slCell.className = 'sl-column';
+        slCell.textContent = index + 1;
+        row.insertBefore(slCell, row.firstChild);
       });
     }
 
@@ -164,7 +202,7 @@
           
           // Add status icon
           const icon = document.createElement('i');
-          icon.className = 'bi me-2';
+          icon.className = 'bi status-icon';
           
           if (!Number.isFinite(code) || /ERR|ERROR|Timeout/i.test(codeText)) {
             row.classList.add('table-danger');
@@ -194,6 +232,10 @@
         var table2 = reportEl.querySelector('table');
         if (table2) {
           table2.id = 'status-table';
+          
+          // Add the SL column before initializing DataTable
+          addSerialNumberColumn();
+          
           initializeDataTable();
         }
 
