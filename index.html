@@ -1,77 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Website Status Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-
 </head>
 <body>
-    <header class="bg-primary text-white py-3">
+    <nav class="navbar navbar-expand-lg bg-primary text-white">
         <div class="container">
-            <h1 class="h3 mb-0">Website Status Monitor</h1>
+            <span class="navbar-brand">
+                <i class="bi bi-activity me-2"></i>
+                Website Status Monitor
+            </span>
+            <div class="theme-toggle ms-auto">
+                <button class="btn btn-outline-light" onclick="toggleTheme()" title="Toggle theme">
+                    <i class="bi bi-moon-fill" id="theme-icon"></i>
+                </button>
+            </div>
         </div>
-    </header>
+    </nav>
+
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">Daily Website Status Report</h1>
+            <p class="lead mb-0">Real-time monitoring and comprehensive status tracking for all websites</p>
+            <div class="last-update-info" id="last-update-container">
+                <i class="bi bi-clock-history me-2"></i>
+                <span id="last-update">Loading last update time...</span>
+            </div>
+        </div>
+    </div>
 
     <main class="container my-5">
-        <section class="mb-5">
-            <h2>Daily Website Status Report</h2>
-            <p>Real-time monitoring and comprehensive status tracking for all websites</p>
-            <p class="text-muted">Last updated: <span id="last-update">Loading last update time...</span></p>
-        </section>
-
         <section class="row mb-5">
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card success">
                     <div class="card-body">
-                        <h5 class="card-title text-success">Sites Online</h5>
-                        <h2 id="sites-online" class="display-4">0</h2>
-                        <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-success" style="width: 100%;"></div>
+                        <div class="status-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="status-number" id="count-ok">0</div>
+                        <div class="status-label">Sites Online</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-success" id="progress-ok" style="width: 100%;"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card danger">
                     <div class="card-body">
-                        <h5 class="card-title text-danger">Sites Down</h5>
-                        <h2 id="sites-down" class="display-4">0</h2>
-                        <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-danger" style="width: 100%;"></div>
+                        <div class="status-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="status-number" id="count-error">0</div>
+                        <div class="status-label">Sites Down</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-danger" id="progress-error" style="width: 100%;"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card warning">
                     <div class="card-body">
-                        <h5 class="card-title text-warning">Warnings</h5>
-                        <h2 id="warnings" class="display-4">0</h2>
-                        <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-warning" style="width: 100%;"></div>
+                        <div class="status-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="status-number" id="count-warning">0</div>
+                        <div class="status-label">Warnings</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-warning" id="progress-warning" style="width: 100%;"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card primary">
                     <div class="card-body">
-                        <h5 class="card-title text-info">Total Sites</h5>
-                        <h2 id="total-sites" class="display-4">0</h2>
-                        <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-info" style="width: 100%;"></div>
+                        <div class="status-icon">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <div class="status-number" id="count-total">0</div>
+                        <div class="status-label">Total Sites</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar" style="width: 100%; background: var(--gradient-primary);"></div>
                         </div>
                     </div>
                 </div>
@@ -130,13 +150,25 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-bs-theme', newTheme);
+            const icon = document.getElementById('theme-icon');
+            icon.className = newTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            const icon = document.getElementById('theme-icon');
+            icon.className = savedTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+        }
+
         // Global variable to hold the chart instance
         let statusChart = null;
 
@@ -202,10 +234,14 @@
                     else if (code >= 400) down++;
                     else warnings++;
                 });
-                document.getElementById('sites-online').textContent = online;
-                document.getElementById('sites-down').textContent = down;
-                document.getElementById('warnings').textContent = warnings;
-                document.getElementById('total-sites').textContent = total;
+                document.getElementById('count-ok').textContent = online;
+                document.getElementById('count-error').textContent = down;
+                document.getElementById('count-warning').textContent = warnings;
+                document.getElementById('count-total').textContent = total;
+
+                // Optionally update progress widths based on percentages
+                // document.getElementById('progress-ok').style.width = `${(online / total * 100)}%`;
+                // But keeping 100% as decorative per original
 
                 // Update chart
                 const ctx = document.getElementById('status-chart').getContext('2d');
