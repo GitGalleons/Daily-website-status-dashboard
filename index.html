@@ -403,285 +403,202 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
-        let reportData = [];
-        let statusChart = null;
+    // Global variable to hold the chart instance
+    let statusChart = null;
 
-        // Theme management
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            updateThemeIcon(savedTheme);
-        }
+    // Function to fetch and parse markdown table from reports/status.md
+    async function loadStatusReport() {
+        try {
+            const response = await fetch('reports/status.md');
+            if (!response.ok) throw new Error('Failed to load status.md');
+            const mdText = await response.text();
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
+            // Extract table from markdown
+            const tableStart = mdText.indexOf('| URL |');
+            if (tableStart === -1) throw new Error('No table found in status.md');
+            const tableText = mdText.slice(tableStart).split('\n\n')[0];
+            const rows = tableText.split('\n').filter(line => line.trim());
 
-        function updateThemeIcon(theme) {
-            const icon = document.getElementById('theme-icon');
-            icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-        }
+            // Parse headers
+            const headers = rows[0].split('|').map(h => h.trim()).slice(1, -1); // Remove empty first/last
 
-        // Time display
-        function updateTime() {
-            const now = new Date();
-            const options = { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit',
-                hour12: true 
-            };
-            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', options);
-        }
-
-        // Load and parse report
-        async function loadReport() {
-            try {
-                const response = await fetch('reports/status.md?t=' + Date.now());
-                if (!response.ok) throw new Error('Failed to load report');
-                
-                const markdown = await response.text();
-                parseReport(markdown);
-                updateLastUpdateTime(markdown);
-            } catch (error) {
-                console.error('Error loading report:', error);
-                document.getElementById('report-content').innerHTML = `
-                    <div class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Failed to load the status report. Please check if the report exists.
-                    </div>
-                `;
-            }
-        }
-
-        function parseReport(markdown) {
-            const html = marked.parse(markdown);
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            
-            const table = tempDiv.querySelector('table');
-            if (!table) {
-                document.getElementById('report-content').innerHTML = `
-                    <div class="alert alert-warning" role="alert">
-                        No data found in the report.
-                    </div>
-                `;
-                return;
-            }
-
-            // Extract data from table
-            const rows = Array.from(table.querySelectorAll('tbody tr'));
-            reportData = rows.map(row => {
-                const cells = row.cells;
-                return {
-                    url: cells[0]?.textContent.trim() || '',
-                    status: cells[1]?.textContent.trim() || '',
-                    code: parseInt(cells[2]?.textContent.trim()) || 0,
-                    lastChecked: cells[3]?.textContent.trim() || '',
-                    dhaka: cells[4]?.textContent.trim() || '',
-                    london: cells[5]?.textContent.trim() || '',
-                    newyork: cells[6]?.textContent.trim() || '',
-                    berlin: cells[7]?.textContent.trim() || '',
-                    shanghai: cells[8]?.textContent.trim() || ''
-                };
+            // Skip separator row rows[1]
+            const dataRows = rows.slice(2).map(row => {
+                const cells = row.split('|').map(c => c.trim()).slice(1, -1);
+                return cells;
             });
 
-            displayReport();
-            updateStatistics();
-            updateChart();
-        }
-
-        function displayReport() {
-            let tableHtml = `
-                <table id="statusTable" class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>URL</th>
-                            <th>Status</th>
-                            <th>HTTP Code</th>
-                            <th>Last Checked (Local Time)</th>
-                            <th>Response</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            reportData.forEach(item => {
-                const statusClass = getStatusClass(item.code);
-                const badgeClass = getBadgeClass(item.code);
-                const icon = getStatusIcon(item.code);
-                
-                tableHtml += `
-                    <tr>
-                        <td class="url-cell">
-                            <a href="${item.url}" target="_blank" class="text-decoration-none">
-                                ${item.url}
-                            </a>
-                        </td>
-                        <td>
-                            <span class="status-badge ${badgeClass}">
-                                ${icon} ${item.status}
-                            </span>
-                        </td>
-                        <td><strong>${item.code}</strong></td>
-                        <td>${new Date(item.lastChecked).toLocaleString()}</td>
-                        <td>${getResponseTime()}</td>
-                    </tr>
-                `;
-            });
-
-            tableHtml += `
-                    </tbody>
-                </table>
-            `;
-
-            // Destroy existing DataTable instance if it exists
-            if ($.fn.DataTable.isDataTable('#statusTable')) {
-                $('#statusTable').DataTable().destroy();
-            }
-
-            document.getElementById('report-content').innerHTML = tableHtml;
-
-            // Initialize DataTable
-            $('#statusTable').DataTable({
-                pageLength: 25,
-                responsive: true,
-                order: [[2, 'asc']],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search websites..."
-                }
-            });
-        }
-
-        function getStatusClass(code) {
-            if (code >= 200 && code < 300) return 'status-ok';
-            if (code >= 300 && code < 400) return 'status-redirect';
-            return 'status-error';
-        }
-
-        function getBadgeClass(code) {
-            if (code >= 200 && code < 300) return 'status-ok';
-            if (code >= 300 && code < 400) return 'status-warning';
-            return 'status-error';
-        }
-
-        function getStatusIcon(code) {
-            if (code >= 200 && code < 300) return '<i class="bi bi-check-circle-fill"></i>';
-            if (code >= 300 && code < 400) return '<i class="bi bi-exclamation-triangle-fill"></i>';
-            return '<i class="bi bi-x-circle-fill"></i>';
-        }
-
-        function getResponseTime() {
-            // Simulate response time for demonstration
-            const time = Math.floor(Math.random() * 1000) + 100;
-            return `${time}ms`;
-        }
-
-        function updateStatistics() {
-            const total = reportData.length;
-            const ok = reportData.filter(item => item.code >= 200 && item.code < 300).length;
-            const error = reportData.filter(item => item.code >= 400 || item.code === 0).length;
-            const warning = reportData.filter(item => item.code >= 300 && item.code < 400).length;
-
-            document.getElementById('count-total').textContent = total;
-            document.getElementById('count-ok').textContent = ok;
-            document.getElementById('count-error').textContent = error;
-            document.getElementById('count-warning').textContent = warning;
-
-            document.getElementById('progress-ok').style.width = `${(ok/total)*100}%`;
-            document.getElementById('progress-error').style.width = `${(error/total)*100}%`;
-            document.getElementById('progress-warning').style.width = `${(warning/total)*100}%`;
-        }
-
-        function updateChart() {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            
-            const ok = reportData.filter(item => item.code >= 200 && item.code < 300).length;
-            const error = reportData.filter(item => item.code >= 400 || item.code === 0).length;
-            const warning = reportData.filter(item => item.code >= 300 && item.code < 400).length;
-
-            if (statusChart) {
-                statusChart.destroy();
-            }
-
-            statusChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Online', 'Error', 'Warning'],
-                    datasets: [{
-                        data: [ok, error, warning],
-                        backgroundColor: [
-                            '#10b981',
-                            '#ef4444',
-                            '#f59e0b'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                font: {
-                                    size: 14
-                                }
-                            }
-                        }
+            // Populate table
+            const tbody = document.querySelector('#status-table tbody');
+            tbody.innerHTML = '';
+            dataRows.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, idx) => {
+                    const td = document.createElement(idx === 0 ? 'th' : 'td');
+                    if (idx === 0) {
+                        td.scope = 'row';
+                        td.innerHTML = `<a href="${cell}" target="_blank" rel="noopener noreferrer">${cell}</a>`;
+                    } else if (idx === 1) {
+                        // Status with color
+                        const status = cell.toLowerCase();
+                        let badgeClass = 'bg-secondary';
+                        if (status.includes('ok') || status.includes('200')) badgeClass = 'bg-success';
+                        else if (status.includes('error') || status.includes('down')) badgeClass = 'bg-danger';
+                        else if (status.includes('warning')) badgeClass = 'bg-warning';
+                        td.innerHTML = `<span class="badge ${badgeClass}">${cell}</span>`;
+                    } else {
+                        td.textContent = cell;
                     }
-                }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
             });
-        }
 
-        function updateLastUpdateTime(markdown) {
-            const match = markdown.match(/Last updated:\s*(.+)/i);
-            if (match && match[1]) {
-                document.getElementById('last-update').textContent = 'Last updated: ' + match[1].trim();
-            }
-        }
+            // Update stats
+            updateStats(dataRows);
 
-        // Export functions
-        function exportToCSV() {
-            let csv = 'URL,Status,HTTP Code,Last Checked\n';
-            reportData.forEach(item => {
-                csv += `"${item.url}","${item.status}",${item.code},"${item.lastChecked}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `website-status-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
+            // Update chart
+            updateChart(dataRows);
 
-        function exportToJSON() {
-            const json = JSON.stringify(reportData, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `website-status-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
+            // Update last update time
+            updateLastUpdate(mdText);
+        } catch (err) {
+            console.error('Error loading status report:', err);
+            document.getElementById('status-table').innerHTML = '<p class="text-danger">Failed to load status report. Please try refreshing the page.</p>';
         }
+    }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            updateTime();
-            loadReport();
-            
-            setInterval(updateTime, 1000);
-            setInterval(loadReport, 5 * 60 * 1000); // Refresh every 5 minutes
+    function updateStats(rows) {
+        let online = 0, down = 0, warnings = 0, total = rows.length;
+        rows.forEach(row => {
+            const status = row[1].toLowerCase();
+            if (status.includes('ok') || status.includes('200')) online++;
+            else if (status.includes('error') || status.includes('down')) down++;
+            else warnings++;
         });
-    </script>
+        document.getElementById('sites-online').textContent = online;
+        document.getElementById('sites-down').textContent = down;
+        document.getElementById('warnings').textContent = warnings;
+        document.getElementById('total-sites').textContent = total;
+    }
+
+    function updateChart(rows) {
+        let online = 0, down = 0, warnings = 0;
+        rows.forEach(row => {
+            const status = row[1].toLowerCase();
+            if (status.includes('ok') || status.includes('200')) online++;
+            else if (status.includes('error') || status.includes('down')) down++;
+            else warnings++;
+        });
+
+        const ctx = document.getElementById('status-chart').getContext('2d');
+
+        // Destroy old chart if it exists
+        if (statusChart) {
+            statusChart.destroy();
+        }
+
+        statusChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Online', 'Down', 'Warnings'],
+                datasets: [{
+                    data: [online, down, warnings],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)', // success
+                        'rgba(239, 68, 68, 0.8)', // danger
+                        'rgba(245, 158, 11, 0.8)' // warning
+                    ],
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Status Distribution'
+                    }
+                },
+                animation: {
+                    duration: 1500
+                }
+            }
+        });
+    }
+
+    function updateLastUpdate(mdText) {
+        const lastUpdatedLine = mdText.split('\n').find(line => line.startsWith('Last updated:'));
+        if (lastUpdatedLine) {
+            const lastUpdated = lastUpdatedLine.replace('Last updated: ', '').trim();
+            document.getElementById('last-update').textContent = lastUpdated;
+        }
+    }
+
+    // Load report on page load
+    window.addEventListener('load', loadStatusReport);
+
+    // Auto-refresh data every 5 minutes without full page reload
+    setInterval(loadStatusReport, 5 * 60 * 1000);
+
+    // Download CSV
+    document.getElementById('download-csv').addEventListener('click', () => {
+        const table = document.getElementById('status-table');
+        let csv = [];
+        for (let row of table.rows) {
+            let rowData = [];
+            for (let cell of row.cells) {
+                rowData.push(cell.textContent.trim());
+            }
+            csv.push(rowData.join(','));
+        }
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'website_status_report.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    });
+
+    // Download JSON
+    document.getElementById('download-json').addEventListener('click', async () => {
+        try {
+            const response = await fetch('reports/status.md');
+            const mdText = await response.text();
+            const tableStart = mdText.indexOf('| URL |');
+            const tableText = mdText.slice(tableStart).split('\n\n')[0];
+            const rows = tableText.split('\n').filter(line => line.trim());
+            const headers = rows[0].split('|').map(h => h.trim()).slice(1, -1);
+            const data = rows.slice(2).map(row => {
+                const cells = row.split('|').map(c => c.trim()).slice(1, -1);
+                return headers.reduce((obj, h, i) => {
+                    obj[h] = cells[i];
+                    return obj;
+                }, {});
+            });
+            const jsonContent = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'website_status_report.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Error generating JSON:', err);
+        }
+    });
+
+    // Print report
+    document.getElementById('print-report').addEventListener('click', () => {
+        window.print();
+    });
+</script>
 </body>
 </html>
