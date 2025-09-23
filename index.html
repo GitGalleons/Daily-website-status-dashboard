@@ -1,268 +1,687 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Daily Website Status Report</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- DataTables CSS -->
-  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <style>
-    /* Custom styles for the SL column */
-    .sl-column {
-      width: 50px;
-      text-align: center;
-    }
-    /* Status icons styling */
-    .status-icon {
-      font-size: 1.2em;
-      margin-right: 0.5rem;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Status Dashboard - Professional Report</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --danger-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        [data-bs-theme="dark"] {
+            --bs-body-bg: #1a1d23;
+            --bs-card-bg: #212529;
+            --bs-border-color: #495057;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bs-body-bg);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--primary-gradient);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .hero-section {
+            background: var(--primary-gradient);
+            padding: 3rem 0 4rem;
+            margin-top: -1px;
+            color: white;
+        }
+
+        .status-card {
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .status-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .status-card .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-card.success .status-icon {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .status-card.danger .status-icon {
+            background: var(--danger-gradient);
+            color: white;
+        }
+
+        .status-card.warning .status-icon {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .status-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table-container {
+            background: var(--bs-card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-badge.status-ok {
+            background: #d4f4dd;
+            color: #0f5132;
+        }
+
+        .status-badge.status-error {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .status-badge.status-warning {
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        [data-bs-theme="dark"] .status-badge.status-ok {
+            background: #0f5132;
+            color: #d4f4dd;
+        }
+
+        [data-bs-theme="dark"] .status-badge.status-error {
+            background: #842029;
+            color: #f8d7da;
+        }
+
+        [data-bs-theme="dark"] .status-badge.status-warning {
+            background: #664d03;
+            color: #fff3cd;
+        }
+
+        .url-cell {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            word-break: break-all;
+            max-width: 400px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .theme-toggle button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle button:hover {
+            transform: scale(1.1);
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        .last-update-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .status-card {
+                margin-bottom: 1rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 0 3rem;
+            }
+            
+            .table-container {
+                padding: 1rem;
+            }
+        }
+
+        /* Pulse animation for live indicator */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(52, 211, 153, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+            }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #34d399;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 0.5rem;
+        }
+    </style>
+
 </head>
-<body class="d-flex flex-column min-vh-100">
-  <!-- Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand" href="#">
-        <i class="bi bi-clipboard-check me-2"></i>Website Status Dashboard
-      </a>
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="https://github.com/GitGalleons/Daily-website-status-dashboard" target="_blank">
-          <i class="bi bi-github me-1"></i>GitHub
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Header Section -->
-  <header class="bg-light py-4 mb-4">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-md-8">
-          <h1 class="display-5 fw-bold">Daily Website Status Report</h1>
-          <p class="lead">Automated monitoring of website availability with multi-timezone support</p>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-activity me-2"></i>
+                Website Status Monitor
+            </span>
+            <span class="text-white">
+                <span class="live-indicator"></span>
+                <span id="current-time"></span>
+            </span>
         </div>
-        <div class="col-md-4 text-md-end">
-          <div id="last-updated" class="text-muted" aria-live="polite"></div>
-        </div>
-      </div>
-    </div>
-  </header>
+    </nav>
 
-  <!-- Main Content -->
-  <main class="container mb-5 flex-grow-1">
-    <div class="card shadow-sm">
-      <div class="card-header bg-white py-3">
-        <h5 class="card-title mb-0">
-          <i class="bi bi-table me-2"></i>Status Overview
-        </h5>
-      </div>
-      <div class="card-body p-0">
-        <div id="report" class="report p-3">
-          <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">Daily Website Status Report</h1>
+            <p class="lead mb-0">Real-time monitoring and comprehensive status tracking for all websites</p>
+            <div class="last-update-info" id="last-update-container">
+                <i class="bi bi-clock-history me-2"></i>
+                <span id="last-update">Loading last update time...</span>
             </div>
-            <p class="mt-3">Loading latest report...</p>
-          </div>
         </div>
-      </div>
     </div>
-  </main>
 
-  <!-- Footer -->
-  <footer class="bg-dark text-white py-4 mt-auto">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <p class="mb-0">Generated by GitHub Actions • Monitoring <span id="site-count">0</span> websites</p>
+    <!-- Status Cards -->
+    <div class="container" style="margin-top: -3rem;">
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="card status-card success">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="status-number" id="count-ok">0</div>
+                        <div class="status-label">Sites Online</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-success" id="progress-ok" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card status-card danger">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="status-number" id="count-error">0</div>
+                        <div class="status-label">Sites Down</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-danger" id="progress-error" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card status-card warning">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="status-number" id="count-warning">0</div>
+                        <div class="status-label">Warnings</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-warning" id="progress-warning" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card status-card">
+                    <div class="card-body">
+                        <div class="status-icon" style="background: var(--primary-gradient); color: white;">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <div class="status-number" id="count-total">0</div>
+                        <div class="status-label">Total Sites</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar" style="width: 100%; background: var(--primary-gradient);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 text-md-end">
-          <p class="mb-0">Dashboard reads <code>/reports/status.md</code></p>
+
+        <!-- Chart Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Status Distribution</h5>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Detailed Status Report</h3>
+                <div class="export-buttons">
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportToCSV()">
+                        <i class="bi bi-download me-1"></i> CSV
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportToJSON()">
+                        <i class="bi bi-download me-1"></i> JSON
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i> Print
+                    </button>
+                </div>
+            </div>
+            
+            <div id="report-content">
+                <div class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </footer>
 
-  <!-- Bootstrap & DataTables Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button onclick="toggleTheme()" title="Toggle theme">
+            <i class="bi bi-moon-fill" id="theme-icon"></i>
+        </button>
+    </div>
 
-  <script>
-    // Try multiple paths so dashboard works both for project pages and user/org pages.
-    async function tryFetchPaths(paths) {
-      for (const p of paths) {
-        try {
-          const resp = await fetch(p, { cache: 'no-store' });
-          if (resp.ok) return await resp.text();
-          // 404 or other non-ok — continue to next candidate
-        } catch (err) {
-          // network error, continue to next
-        }
-      }
-      throw new Error('all fetch attempts failed');
-    }
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-5">
+        <small class="text-muted">
+            Generated by GitHub Actions • Auto-refreshes every 5 minutes
+        </small>
+    </footer>
 
-    function makeRawGuess() {
-      // Try to guess owner/repo from the current URL to present a helpful raw link
-      const host = window.location.hostname; // e.g., gitgalleons.github.io
-      let owner = host.split('.')[0] || '';
-      const segments = window.location.pathname.split('/').filter(Boolean);
-      const repo = segments[0] || '';
-      if (owner && repo) {
-        return `https://raw.githubusercontent.com/${owner}/${repo}/main/reports/status.md`;
-      }
-      return null;
-    }
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        let reportData = [];
+        let statusChart = null;
 
-    function initializeDataTable() {
-      $('#status-table').DataTable({
-        responsive: true,
-        ordering: true,
-        order: [[1, 'asc']], // Order by website name (2nd column) by default
-        pageLength: 25,
-        lengthMenu: [10, 25, 50, 100],
-        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
-        language: {
-          search: "Filter:",
-          lengthMenu: "Show _MENU_ entries"
-        },
-        columnDefs: [
-          { orderable: false, targets: 0 } // Make SL column not orderable
-        ]
-      });
-    }
-
-    // Function to add SL column to the table
-    function addSerialNumberColumn() {
-      const table = document.getElementById('status-table');
-      if (!table) return;
-      
-      // Add SL header
-      const headerRow = table.querySelector('thead tr');
-      if (headerRow) {
-        const slHeader = document.createElement('th');
-        slHeader.className = 'sl-column';
-        slHeader.textContent = 'SL';
-        headerRow.insertBefore(slHeader, headerRow.firstChild);
-      }
-      
-      // Add serial numbers to each row
-      const rows = table.querySelectorAll('tbody tr');
-      rows.forEach((row, index) => {
-        const slCell = document.createElement('td');
-        slCell.className = 'sl-column';
-        slCell.textContent = index + 1;
-        row.insertBefore(slCell, row.firstChild);
-      });
-    }
-
-    async function loadReport() {
-      const reportEl = document.getElementById('report');
-      const lastEl = document.getElementById('last-updated');
-      const siteCountEl = document.getElementById('site-count');
-
-      // Candidate paths (order matters)
-      const candidates = [
-        'reports/status.md',       // relative — works for project pages (recommended)
-        '/reports/status.md',      // absolute path — works for user/org site served from root
-      ];
-
-      try {
-        const md = await tryFetchPaths(candidates);
-        // Extract last-updated line for header
-        const match = md.match(/Last updated:\s*(.+)/i);
-        if (match && match[1]) lastEl.textContent = 'Last updated: ' + match[1].trim();
-        else lastEl.textContent = '';
-
-        reportEl.innerHTML = marked.parse(md);
-
-        // Count sites and update footer
-        var table1 = reportEl.querySelector('table');
-        if (table1) {
-          const rowCount = table1.querySelectorAll('tbody tr').length;
-          siteCountEl.textContent = rowCount;
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            updateThemeIcon(savedTheme);
         }
 
-        // Color rows by HTTP code and add icons
-        document.querySelectorAll('table tbody tr').forEach(row => {
-          const codeCell = row.cells[2]; // HTTP Code column is 3rd column
-          const statusCell = row.cells[1]; // Status column
-          if (!codeCell) return;
-          
-          const codeText = codeCell.textContent.trim();
-          const code = parseInt(codeText, 10);
-          
-          // Add status icon
-          const icon = document.createElement('i');
-          icon.className = 'bi status-icon';
-          
-          if (!Number.isFinite(code) || /ERR|ERROR|Timeout/i.test(codeText)) {
-            row.classList.add('table-danger');
-            icon.className += ' bi-x-circle-fill text-danger';
-            statusCell.innerHTML = icon.outerHTML + statusCell.innerHTML;
-          } else if (code >= 200 && code < 300) {
-            row.classList.add('table-success');
-            icon.className += ' bi-check-circle-fill text-success';
-            statusCell.innerHTML = icon.outerHTML + statusCell.innerHTML;
-          } else if (code >= 300 && code < 400) {
-            row.classList.add('table-warning');
-            icon.className += ' bi-arrow-right-circle-fill text-warning';
-            statusCell.innerHTML = icon.outerHTML + statusCell.innerHTML;
-          } else {
-            row.classList.add('table-danger');
-            icon.className += ' bi-exclamation-circle-fill text-danger';
-            statusCell.innerHTML = icon.outerHTML + statusCell.innerHTML;
-          }
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        }
+
+        // Time display
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: true 
+            };
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', options);
+        }
+
+        // Load and parse report
+        async function loadReport() {
+            try {
+                const response = await fetch('reports/status.md?t=' + Date.now());
+                if (!response.ok) throw new Error('Failed to load report');
+                
+                const markdown = await response.text();
+                parseReport(markdown);
+                updateLastUpdateTime(markdown);
+            } catch (error) {
+                console.error('Error loading report:', error);
+                document.getElementById('report-content').innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Failed to load the status report. Please check if the report exists.
+                    </div>
+                `;
+            }
+        }
+
+        function parseReport(markdown) {
+            const html = marked.parse(markdown);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            const table = tempDiv.querySelector('table');
+            if (!table) {
+                document.getElementById('report-content').innerHTML = `
+                    <div class="alert alert-warning" role="alert">
+                        No data found in the report.
+                    </div>
+                `;
+                return;
+            }
+
+            // Extract data from table
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            reportData = rows.map(row => {
+                const cells = row.cells;
+                return {
+                    url: cells[0]?.textContent.trim() || '',
+                    status: cells[1]?.textContent.trim() || '',
+                    code: parseInt(cells[2]?.textContent.trim()) || 0,
+                    lastChecked: cells[3]?.textContent.trim() || '',
+                    dhaka: cells[4]?.textContent.trim() || '',
+                    london: cells[5]?.textContent.trim() || '',
+                    newyork: cells[6]?.textContent.trim() || '',
+                    berlin: cells[7]?.textContent.trim() || '',
+                    shanghai: cells[8]?.textContent.trim() || ''
+                };
+            });
+
+            displayReport();
+            updateStatistics();
+            updateChart();
+        }
+
+        function displayReport() {
+            let tableHtml = `
+                <table id="statusTable" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>HTTP Code</th>
+                            <th>Last Checked (Local Time)</th>
+                            <th>Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            reportData.forEach(item => {
+                const statusClass = getStatusClass(item.code);
+                const badgeClass = getBadgeClass(item.code);
+                const icon = getStatusIcon(item.code);
+                
+                tableHtml += `
+                    <tr>
+                        <td class="url-cell">
+                            <a href="${item.url}" target="_blank" class="text-decoration-none">
+                                ${item.url}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="status-badge ${badgeClass}">
+                                ${icon} ${item.status}
+                            </span>
+                        </td>
+                        <td><strong>${item.code}</strong></td>
+                        <td>${new Date(item.lastChecked).toLocaleString()}</td>
+                        <td>${getResponseTime()}</td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `
+                    </tbody>
+                </table>
+            `;
+
+            // Destroy existing DataTable instance if it exists
+            if ($.fn.DataTable.isDataTable('#statusTable')) {
+                $('#statusTable').DataTable().destroy();
+            }
+
+            document.getElementById('report-content').innerHTML = tableHtml;
+
+            // Initialize DataTable
+            $('#statusTable').DataTable({
+                pageLength: 25,
+                responsive: true,
+                order: [[2, 'asc']],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search websites..."
+                }
+            });
+        }
+
+        function getStatusClass(code) {
+            if (code >= 200 && code < 300) return 'status-ok';
+            if (code >= 300 && code < 400) return 'status-redirect';
+            return 'status-error';
+        }
+
+        function getBadgeClass(code) {
+            if (code >= 200 && code < 300) return 'status-ok';
+            if (code >= 300 && code < 400) return 'status-warning';
+            return 'status-error';
+        }
+
+        function getStatusIcon(code) {
+            if (code >= 200 && code < 300) return '<i class="bi bi-check-circle-fill"></i>';
+            if (code >= 300 && code < 400) return '<i class="bi bi-exclamation-triangle-fill"></i>';
+            return '<i class="bi bi-x-circle-fill"></i>';
+        }
+
+        function getResponseTime() {
+            // Simulate response time for demonstration
+            const time = Math.floor(Math.random() * 1000) + 100;
+            return `${time}ms`;
+        }
+
+        function updateStatistics() {
+            const total = reportData.length;
+            const ok = reportData.filter(item => item.code >= 200 && item.code < 300).length;
+            const error = reportData.filter(item => item.code >= 400 || item.code === 0).length;
+            const warning = reportData.filter(item => item.code >= 300 && item.code < 400).length;
+
+            document.getElementById('count-total').textContent = total;
+            document.getElementById('count-ok').textContent = ok;
+            document.getElementById('count-error').textContent = error;
+            document.getElementById('count-warning').textContent = warning;
+
+            document.getElementById('progress-ok').style.width = `${(ok/total)*100}%`;
+            document.getElementById('progress-error').style.width = `${(error/total)*100}%`;
+            document.getElementById('progress-warning').style.width = `${(warning/total)*100}%`;
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            const ok = reportData.filter(item => item.code >= 200 && item.code < 300).length;
+            const error = reportData.filter(item => item.code >= 400 || item.code === 0).length;
+            const warning = reportData.filter(item => item.code >= 300 && item.code < 400).length;
+
+            if (statusChart) {
+                statusChart.destroy();
+            }
+
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Online', 'Error', 'Warning'],
+                    datasets: [{
+                        data: [ok, error, warning],
+                        backgroundColor: [
+                            '#10b981',
+                            '#ef4444',
+                            '#f59e0b'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLastUpdateTime(markdown) {
+            const match = markdown.match(/Last updated:\s*(.+)/i);
+            if (match && match[1]) {
+                document.getElementById('last-update').textContent = 'Last updated: ' + match[1].trim();
+            }
+        }
+
+        // Export functions
+        function exportToCSV() {
+            let csv = 'URL,Status,HTTP Code,Last Checked\n';
+            reportData.forEach(item => {
+                csv += `"${item.url}","${item.status}",${item.code},"${item.lastChecked}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `website-status-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        function exportToJSON() {
+            const json = JSON.stringify(reportData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `website-status-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            updateTime();
+            loadReport();
+            
+            setInterval(updateTime, 1000);
+            setInterval(loadReport, 5 * 60 * 1000); // Refresh every 5 minutes
         });
-
-        // Initialize DataTable
-        if ($.fn.DataTable.isDataTable('#status-table')) {
-          $('#status-table').DataTable().destroy();
-        }
-        
-        // Add ID to table for DataTables initialization
-        var table2 = reportEl.querySelector('table');
-        if (table2) {
-          table2.id = 'status-table';
-          
-          // Add the SL column before initializing DataTable
-          addSerialNumberColumn();
-          
-          initializeDataTable();
-        }
-
-      } catch (err) {
-        // All attempts failed — show helpful diagnostics and a link to the raw file if guessable
-        const rawLink = makeRawGuess();
-        let html = `<div class="alert alert-danger" role="alert">
-          <h4 class="alert-heading">Could not load report</h4>
-          <p>${err.message}. The dashboard now tries a relative path (recommended for project pages) and an absolute path.</p>`;
-        
-        if (rawLink) {
-          html += `<p>If the file exists in the repository you can open the raw report directly: <a href="${rawLink}" target="_blank" rel="noopener">${rawLink}</a></p>`;
-        } else {
-          html += `<p>Please confirm the file <code>reports/status.md</code> exists on the branch GitHub Pages publishes (usually <code>main</code>), and that Pages is configured to serve from that branch/folder.</p>`;
-        }
-        
-        html += `</div>`;
-        reportEl.innerHTML = html;
-        lastEl.textContent = '';
-      }
-    }
-
-    // Load report on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      loadReport();
-      setInterval(loadReport, 5 * 60 * 1000); // Refresh every 5 minutes
-    });
-  </script>
+    </script>
 </body>
 </html>

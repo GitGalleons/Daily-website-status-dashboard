@@ -1,0 +1,123 @@
+/* Custom styles to enhance Bootstrap */
+:root {
+  --bs-body-bg: #f8f9fa;
+}
+
+body {
+  background-color: var(--bs-body-bg);
+}
+
+.card {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+/* Enhanced table styling with better borders */
+.table {
+  margin-bottom: 0;
+  border: 1px solid #dee2e6;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-top: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+}
+
+/* Remove right border from last cell in each row */
+.table tbody td:last-child {
+  border-right: none;
+}
+
+/* Add border to the first row after header */
+.table tbody tr:first-child td {
+  border-top: none;
+}
+
+/* Add subtle row hover effect */
+.table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  border-radius: 0.25rem;
+}
+
+.bg-success-light {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-danger-light {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-warning-light {
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Custom styles for the SL column */
+.sl-column {
+  width: 50px;
+  text-align: center;
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Status icons styling */
+.status-icon {
+  font-size: 1.2em;
+  margin-right: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-5 {
+    font-size: 2rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+    border: 1px solid #dee2e6;
+  }
+  
+  /* Hide some columns on mobile */
+  .table thead th:nth-child(4),
+  .table tbody td:nth-child(4),
+  .table thead th:nth-child(5),
+  .table tbody td:nth-child(5),
+  .table thead th:nth-child(6),
+  .table tbody td:nth-child(6),
+  .table thead th:nth-child(7),
+  .table tbody td:nth-child(7),
+  .table thead th:nth-child(8),
+  .table tbody td:nth-child(8) {
+    display: none;
+  }
+}
+
+/* DataTables customization */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.dataTables_wrapper .dataTables_info {
+  padding: 0 1rem;
+}
