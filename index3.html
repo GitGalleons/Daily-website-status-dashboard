@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Status Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="style3.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary text-white">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="bi bi-activity me-2"></i>
+                Website Status Monitor
+            </span>
+            <div class="d-flex">
+                <div class="btn-group me-2">
+                    <button class="btn btn-outline-light" onclick="exportToCSV()" title="Download CSV">
+                        <i class="bi bi-filetype-csv"></i>
+                    </button>
+                    <button class="btn btn-outline-light" onclick="exportToJSON()" title="Download JSON">
+                        <i class="bi bi-filetype-json"></i>
+                    </button>
+                    <button class="btn btn-outline-light" onclick="window.print()" title="Print">
+                        <i class="bi bi-printer"></i>
+                    </button>
+                </div>
+                <div class="theme-toggle">
+                    <button class="btn btn-outline-light" onclick="toggleTheme()" title="Toggle theme">
+                        <i class="bi bi-moon-fill" id="theme-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">Daily Website Status Report</h1>
+            <p class="lead mb-0">Real-time monitoring and comprehensive status tracking for all websites</p>
+            <div class="last-update-info" id="last-update-container">
+                <i class="bi bi-clock-history me-2"></i>
+                <span id="last-update">Loading last update time...</span>
+            </div>
+        </div>
+    </div>
+
+    <main class="container my-5">
+        <section class="row mb-5" id="status-cards">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card success">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="status-number" id="count-ok">0</div>
+                        <div class="status-label">Sites Online</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-success" id="progress-ok" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card danger">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="status-number" id="count-down">0</div>
+                        <div class="status-label">Sites Down</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-danger" id="progress-down" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card warning">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="status-number" id="count-warning">0</div>
+                        <div class="status-label">Warnings</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-warning" id="progress-warning" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card primary">
+                    <div class="card-body">
+                        <div class="status-icon">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <div class="status-number" id="count-total">0</div>
+                        <div class="status-label">Total Sites</div>
+                        <div class="progress mt-3" style="height: 4px;">
+                            <div class="progress-bar bg-primary" id="progress-total" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Status Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" width="200" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Website Status Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="status-table">
+                                <thead>
+                                    <tr>
+                                        <th>URL</th>
+                                        <th>Status</th>
+                                        <th>HTTP Code</th>
+                                        <th>Last Checked (UTC)</th>
+                                        <th>Asia/Dhaka</th>
+                                        <th>Europe/London</th>
+                                        <th>America/New_York</th>
+                                        <th>Europe/Berlin</th>
+                                        <th>Asia/Shanghai</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="status-table-body">
+                                    <tr>
+                                        <td colspan="9" class="text-center">Loading data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-light py-3 text-center text-muted">
+        <div class="container">
+            Generated by GitHub Actions • Auto-refreshes every 5 minutes
+        </div>
+    </footer>
+
+    <script>
+        // Theme management
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            const themeIcon = document.getElementById('theme-icon');
+            themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+
+        // Data fetching and parsing
+        let statusData = [];
+        let lastUpdated = '';
+        let statusChart = null;
+
+        async function fetchStatusData() {
+            try {
+                const response = await fetch('reports/status.md');
+                const text = await response.text();
+                parseStatusData(text);
+            } catch (error) {
+                console.error('Error fetching status data:', error);
+                document.getElementById('status-table-body').innerHTML = 
+                    '<tr><td colspan="9" class="text-center text-danger">Error loading data. Please try again later.</td></tr>';
+            }
+        }
+
+        function parseStatusData(text) {
+            const lines = text.split('\n');
+            
+            // Extract last updated time
+            const lastUpdatedLine = lines.find(line => line.startsWith('Last updated:'));
+            if (lastUpdatedLine) {
+                lastUpdated = lastUpdatedLine.replace('Last updated:', '').trim();
+                document.getElementById('last-update').textContent = lastUpdated;
+            }
+            
+            // Find the table start
+            const tableStartIndex = lines.findIndex(line => line.startsWith('| URL |'));
+            if (tableStartIndex === -1) return;
+            
+            // Extract table headers and data
+            const tableLines = lines.slice(tableStartIndex);
+            const headers = tableLines[0].split('|').map(h => h.trim()).filter(h => h);
+            
+            statusData = [];
+            for (let i = 2; i < tableLines.length; i++) {
+                const line = tableLines[i];
+                if (!line.startsWith('|')) continue;
+                
+                const cells = line.split('|').map(c => c.trim()).filter(c => c);
+                if (cells.length < headers.length) continue;
+                
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = cells[index] || '';
+                });
+                statusData.push(row);
+            }
+            
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            // Update counts
+            const total = statusData.length;
+            const ok = statusData.filter(site => {
+                const code = parseInt(site['HTTP Code']) || 0;
+                return site.Status === 'OK' || code < 300;
+            }).length;
+            
+            const down = statusData.filter(site => {
+                const code = parseInt(site['HTTP Code']) || 0;
+                return code >= 400;
+            }).length;
+            
+            const warning = total - ok - down;
+            
+            document.getElementById('count-ok').textContent = ok;
+            document.getElementById('count-down').textContent = down;
+            document.getElementById('count-warning').textContent = warning;
+            document.getElementById('count-total').textContent = total;
+            
+            // Update progress bars
+            document.getElementById('progress-ok').style.width = total ? (ok / total * 100) + '%' : '0%';
+            document.getElementById('progress-down').style.width = total ? (down / total * 100) + '%' : '0%';
+            document.getElementById('progress-warning').style.width = total ? (warning / total * 100) + '%' : '0%';
+            
+            // Update chart
+            updateChart(ok, down, warning);
+            
+            // Update table
+            updateTable();
+        }
+
+        function updateChart(ok, down, warning) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            if (statusChart) {
+                statusChart.destroy();
+            }
+            
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Online', 'Down', 'Warnings'],
+                    datasets: [{
+                        data: [ok, down, warning],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById('status-table-body');
+            tableBody.innerHTML = '';
+            
+            statusData.forEach(site => {
+                const row = document.createElement('tr');
+                
+                // Determine status badge
+                const code = parseInt(site['HTTP Code']) || 0;
+                let badgeClass = 'warning';
+                let badgeText = site.Status;
+                
+                if (site.Status === 'OK' || code < 300) {
+                    badgeClass = 'success';
+                } else if (code >= 400) {
+                    badgeClass = 'danger';
+                }
+                
+                // URL cell with link
+                const urlCell = document.createElement('td');
+                const urlLink = document.createElement('a');
+                urlLink.href = site.URL;
+                urlLink.textContent = site.URL;
+                urlLink.target = '_blank';
+                urlCell.appendChild(urlLink);
+                
+                // Status badge cell
+                const statusCell = document.createElement('td');
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `badge bg-${badgeClass}`;
+                statusBadge.textContent = badgeText;
+                statusCell.appendChild(statusBadge);
+                
+                // HTTP code cell
+                const codeCell = document.createElement('td');
+                codeCell.textContent = site['HTTP Code'];
+                
+                // Timestamp cells
+                const utcCell = document.createElement('td');
+                utcCell.textContent = site['Last Checked (UTC)'];
+                
+                const dhakaCell = document.createElement('td');
+                dhakaCell.textContent = site['Asia/Dhaka'];
+                
+                const londonCell = document.createElement('td');
+                londonCell.textContent = site['Europe/London'];
+                
+                const nyCell = document.createElement('td');
+                nyCell.textContent = site['America/New_York'];
+                
+                const berlinCell = document.createElement('td');
+                berlinCell.textContent = site['Europe/Berlin'];
+                
+                const shanghaiCell = document.createElement('td');
+                shanghaiCell.textContent = site['Asia/Shanghai'];
+                
+                // Append all cells to row
+                row.appendChild(urlCell);
+                row.appendChild(statusCell);
+                row.appendChild(codeCell);
+                row.appendChild(utcCell);
+                row.appendChild(dhakaCell);
+                row.appendChild(londonCell);
+                row.appendChild(nyCell);
+                row.appendChild(berlinCell);
+                row.appendChild(shanghaiCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Export functions
+        function exportToCSV() {
+            if (statusData.length === 0) return;
+            
+            const headers = Object.keys(statusData[0]);
+            const csvContent = [
+                headers.join(','),
+                ...statusData.map(row => 
+                    headers.map(header => `"${row[header]}"`).join(',')
+                )
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `website-status-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function exportToJSON() {
+            if (statusData.length === 0) return;
+            
+            const jsonContent = JSON.stringify({
+                lastUpdated,
+                sites: statusData
+            }, null, 2);
+            
+            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `website-status-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Initialize and auto-refresh
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchStatusData();
+            // Auto-refresh every 5 minutes
+            setInterval(fetchStatusData, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>
+
+
+<!-- 
+Key Features
+Dynamic Data Loading: Fetches and parses the status.md file to populate the dashboard
+Theme Toggle: Dark/light mode with localStorage persistence
+Visual Status Indicators: Color-coded badges and progress bars
+Doughnut Chart: Visual representation of status distribution using Chart.js
+Export Options: CSV, JSON, and print functionality
+Auto-refresh: Updates every 5 minutes
+Responsive Design: Works on mobile and desktop devices
+Proper Contrast: Ensures text readability in both light and dark modes
+The dashboard will automatically load data from the status.md file, parse it, and display it in an organized, visually appealing format with all the requested features.
+ -->
+
+<!-- 
+
+ I need you to create an enhanced website status dashboard using HTML, CSS, and JavaScript. The dashboard should display data from a Markdown file called "reports/status.md" (sample provided below), which contains a table of website URLs, their statuses, HTTP codes, and timestamps in multiple timezones. The dashboard must:
+
+- Dynamically load and parse the status.md file to populate:
+  - Last update time (from the "Last updated:" line).
+  - Summary stats: Sites Online (OK or <300 codes), Sites Down (errors or >=400 codes), Warnings (other), Total Sites.
+  - A doughnut chart (using Chart.js) for status distribution.
+  - A detailed table with URL links, status badges (green for online, red for down, yellow for warnings), HTTP codes, and timestamps.
+ 
+
+- Add download options: CSV, JSON (from table data), and Print (window.print()).
+
+- Support dark/light mode toggle:
+  - Use Bootstrap's data-bs-theme="dark/light".
+  - Toggle button in navbar with icon (moon/sun).
+  - Save preference in localStorage.
+  - Ensure text readability: In light mode, use dark text on light backgrounds; in dark mode, light text on dark backgrounds. Fix any white-on-white issues by using variables like --text-primary (dark in light mode, light in dark mode).
+
+- UI structure:
+  - Navbar: With brand "<i class='bi bi-activity me-2'></i> Website Status Monitor" and theme toggle button.
+  - Hero section: Gradient background, title "Daily Website Status Report", subtitle "Real-time monitoring...", and last update with clock icon.
+  - Status cards (row of 4): 
+    - Online: Green icon <i class='bi bi-check-circle'></i>, number, label, progress bar.
+    - Down: Red icon <i class='bi bi-x-circle'></i>, number, label, progress bar.
+    - Warnings: Yellow icon <i class='bi bi-exclamation-triangle'></i>, number, label, progress bar.
+    - Total: Primary icon <i class='bi bi-globe'></i>, number, label, progress bar (always 100%).
+  - Chart section: Card with "Status Distribution" header and doughnut chart.
+  - Table section: Responsive table with headers from status.md, loading message.
+  - Footer: "Generated by GitHub Actions • Auto-refreshes every 5 minutes".
+
+- Use Bootstrap 5.3, Bootstrap Icons, Chart.js (CDNs provided in sample HTML).
+- Base on this sample index.html structure (update the script to handle parsing and updates):
+
+<DOCUMENT filename="index.html">
+ Insert the full index.html from our last version here, but without the final script – let the AI generate it --> 
+<!-- 
+
+<section class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="status-chart"></canvas>
+                </div>
+            </div>
+        </section>
+		                    <canvas id="status-chart"></canvas>
+
+		
+		
+		 if (statusChart) statusChart.destroy();
+                statusChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Online', 'Down', 'Warnings'],
+                        datasets: [{
+                            data: [online, down, warnings],
+                            backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                            borderWidth: 1,
+                            borderColor: 'rgba(255,255,255,0.1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Status Distribution' }
+                        },
+                        animation: { duration: 1500 }
+                    }
+                });
+				
+				                        maintainAspectRatio: false,
+
+
+
+/* Chart size control */
+#status-chart {
+    height: 300px;
+    width: 100%;
+}   -->

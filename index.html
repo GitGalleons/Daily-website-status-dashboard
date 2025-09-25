@@ -104,7 +104,7 @@
                     <h5 class="mb-0">Status Distribution</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="status-chart" height="200"></canvas>
+                    <canvas id="status-chart"></canvas>
                 </div>
             </div>
         </section>
@@ -259,6 +259,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: { position: 'top' },
                             title: { display: true, text: 'Status Distribution' }

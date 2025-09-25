@@ -203,3 +203,9 @@ footer {
 .table {
     color: var(--text-primary);
 }
+
+/* Chart size control */
+#status-chart {
+    height: 500px;
+    width: 100%;
+}

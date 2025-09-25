@@ -1,0 +1,127 @@
+
+style.css
+:root {
+    --text-primary: #212529;
+    --bg-primary: #ffffff;
+}
+
+[data-bs-theme="dark"] {
+    --text-primary: #f8f9fa;
+    --bg-primary: #212529;
+}
+
+body {
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+.last-update-info {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.status-card {
+    text-align: center;
+    transition: transform 0.2s;
+    height: 100%;
+}
+
+.status-card:hover {
+    transform: translateY(-5px);
+}
+
+.status-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.status-card.success .status-icon {
+    color: #198754;
+}
+
+.status-card.danger .status-icon {
+    color: #dc3545;
+}
+
+.status-card.warning .status-icon {
+    color: #ffc107;
+}
+
+.status-card.primary .status-icon {
+    color: #0d6efd;
+}
+
+.status-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.status-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+[data-bs-theme="dark"] .status-label {
+    color: #adb5bd;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: #2b3035;
+    border-color: #373b3e;
+}
+
+[data-bs-theme="dark"] .table {
+    --bs-table-color: #f8f9fa;
+    --bs-table-bg: transparent;
+    --bs-table-border-color: #373b3e;
+}
+
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    --bs-table-accent-bg: rgba(255, 255, 255, 0.075);
+}
+
+footer {
+    margin-top: 3rem;
+}
+
+/* Print styles */
+@media print {
+    .navbar, .hero-section, .btn-group, .theme-toggle {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+    
+    .status-card {
+        page-break-inside: avoid;
+    }
+    
+    footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+}
