@@ -11,6 +11,10 @@ jobs:
   check-websites-manual:
     name: Check websites and publish report (manual)
     runs-on: ubuntu-latest
+    env:
+      # Opt-in to Node.js 24 for JavaScript actions now, per GitHub recommendations
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout repository (allow push)
         uses: actions/checkout@v4
@@ -19,7 +23,7 @@ jobs:
           persist-credentials: true
 
       - name: Setup Node.js 18
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # UPGRADED to latest for Node.js 24 support
         with:
           node-version: '18'
 
