@@ -3,7 +3,8 @@ name: Daily Website Status Check (automatic)
 # Automatic scheduled run only (daily at 05:00 AM UTC+6 -> 23:00 UTC previous day)
 on:
   schedule:
-    - cron: '0 23 * * *' # 23:00 UTC -> 05:00 AM (UTC+6)
+    - cron: '0 4 * * *' # 10:00 AM (UTC+6)
+
 permissions:
   contents: write
 
