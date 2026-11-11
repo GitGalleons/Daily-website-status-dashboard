@@ -63,7 +63,8 @@ const urls = [
   "http://mangogatewaysolution.runasp.net/",
   "http://mangoshoppingcart.runasp.net/index.html",
   "http://mangoreward.runasp.net",
-  "http://mangoreward.runasp.net/index.htm"
+  "http://mangoreward.runasp.net/index.htm",
+  "http://cronservices.runasp.net/"
 ];
 
 const TIMEOUT = 20000; // ms
